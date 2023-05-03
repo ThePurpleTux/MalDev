@@ -238,3 +238,11 @@ int main(int argc, char* argv[]){
     printf("\n%s Done!", ok);    
     return EXIT_SUCCESS;
 }
+
+
+/*
+Resources:
+    https://malapi.io/
+    https://www.vergiliusproject.com/
+    http://undocumented.ntinternals.net/
+*/
