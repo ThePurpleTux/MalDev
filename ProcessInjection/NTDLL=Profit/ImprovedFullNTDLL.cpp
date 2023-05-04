@@ -169,13 +169,12 @@ int main(int argc, char *argv[]){
     PVOID rBaseAddress;
     ULONG OldProtect;
 
-    // if(argc != 2 || !argv[1] || argv[1] == NULL){
-    //     printf("%s Usage: %s <procname>", err, argv[0]);
-    //     return EXIT_FAILURE;
-    // }
+    if(argc != 2 || !argv[1] || argv[1] == NULL){
+        printf("%s Usage: %s <procname>\n ", err, argv[0]);
+        return EXIT_FAILURE;
+    }
 
-    // const char *procname = argv[1];
-    const char *procname = "notepad.exe";
+    const char *procname = argv[1];
 
     // Find target PID
     pid = FindTarget(procname);
