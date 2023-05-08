@@ -10,10 +10,10 @@ NtAllocateVirtualMemory PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0C9AC5FB3h        ; Load function hash into ECX.
+	mov ecx, 08F10F9EFh        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 0C9AC5FB3h        ; Re-Load function hash into ECX (optional).
+	mov ecx, 08F10F9EFh        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -30,10 +30,10 @@ NtWriteVirtualMemory PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 003930D05h        ; Load function hash into ECX.
+	mov ecx, 0C3568B87h        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 003930D05h        ; Re-Load function hash into ECX (optional).
+	mov ecx, 0C3568B87h        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -50,10 +50,10 @@ NtCreateUserProcess PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0C2A1DB0Fh        ; Load function hash into ECX.
+	mov ecx, 002980905h        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 0C2A1DB0Fh        ; Re-Load function hash into ECX (optional).
+	mov ecx, 002980905h        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -70,10 +70,10 @@ NtQueueApcThread PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 098334A9Dh        ; Load function hash into ECX.
+	mov ecx, 01436D019h        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 098334A9Dh        ; Re-Load function hash into ECX (optional).
+	mov ecx, 01436D019h        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -90,10 +90,10 @@ NtResumeThread PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0E34028EFh        ; Load function hash into ECX.
+	mov ecx, 0128F5C2Dh        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 0E34028EFh        ; Re-Load function hash into ECX (optional).
+	mov ecx, 0128F5C2Dh        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -110,10 +110,10 @@ NtProtectVirtualMemory PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0CB58203Ah        ; Load function hash into ECX.
+	mov ecx, 03EA3061Ch        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 0CB58203Ah        ; Re-Load function hash into ECX (optional).
+	mov ecx, 03EA3061Ch        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -130,10 +130,10 @@ NtClose PROC
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 082257845h        ; Load function hash into ECX.
+	mov ecx, 040975F2Dh        ; Load function hash into ECX.
 	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
 	mov r15, rax                           ; Save the address of the syscall
-	mov ecx, 082257845h        ; Re-Load function hash into ECX (optional).
+	mov ecx, 040975F2Dh        ; Re-Load function hash into ECX (optional).
 	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
 	add rsp, 28h
 	mov rcx, [rsp+8]                      ; Restore registers.
@@ -143,5 +143,25 @@ NtClose PROC
 	mov r10, rcx
 	jmp r15                                ; Jump to -> Invoke system call.
 NtClose ENDP
+
+NtCreateProcessEx PROC
+	mov [rsp +8], rcx          ; Save registers.
+	mov [rsp+16], rdx
+	mov [rsp+24], r8
+	mov [rsp+32], r9
+	sub rsp, 28h
+	mov ecx, 04197012Fh        ; Load function hash into ECX.
+	call SW3_GetSyscallAddress              ; Resolve function hash into syscall offset.
+	mov r15, rax                           ; Save the address of the syscall
+	mov ecx, 04197012Fh        ; Re-Load function hash into ECX (optional).
+	call SW3_GetSyscallNumber              ; Resolve function hash into syscall number.
+	add rsp, 28h
+	mov rcx, [rsp+8]                      ; Restore registers.
+	mov rdx, [rsp+16]
+	mov r8, [rsp+24]
+	mov r9, [rsp+32]
+	mov r10, rcx
+	jmp r15                                ; Jump to -> Invoke system call.
+NtCreateProcessEx ENDP
 
 end

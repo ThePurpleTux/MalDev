@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ntdll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="syscalls.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -132,7 +132,6 @@
     <ClCompile Include="syscalls.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ntdll.h" />
     <ClInclude Include="syscalls.h" />
   </ItemGroup>
   <ItemGroup>

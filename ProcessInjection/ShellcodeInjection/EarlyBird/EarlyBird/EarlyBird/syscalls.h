@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-#define SW3_SEED 0xF615373D
+#define SW3_SEED 0x1F21CAA0
 #define SW3_ROL8(v) (v << 8 | v >> 24)
 #define SW3_ROR8(v) (v >> 8 | v << 24)
 #define SW3_ROX8(v) ((SW3_SEED % 2) ? SW3_ROL8(v) : SW3_ROR8(v))
@@ -56,29 +56,12 @@ BOOL SW3_PopulateSyscallList();
 EXTERN_C DWORD SW3_GetSyscallNumber(DWORD FunctionHash);
 EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash);
 EXTERN_C PVOID internal_cleancall_wow64_gate(VOID);
-#ifndef InitializeObjectAttributes
-#define InitializeObjectAttributes( p, n, a, r, s ) { \
-	(p)->Length = sizeof( OBJECT_ATTRIBUTES );        \
-	(p)->RootDirectory = r;                           \
-	(p)->Attributes = a;                              \
-	(p)->ObjectName = n;                              \
-	(p)->SecurityDescriptor = s;                      \
-	(p)->SecurityQualityOfService = NULL;             \
-}
-#endif
-
 typedef struct _UNICODE_STRING
 {
 	USHORT Length;
 	USHORT MaximumLength;
 	PWSTR  Buffer;
 } UNICODE_STRING, *PUNICODE_STRING;
-
-typedef VOID(*PPS_APC_ROUTINE)(
-	PVOID ApcArgument1,
-	PVOID ApcArgument2,
-	PVOID ApcArgument3
-	);
 
 typedef enum _PS_CREATE_STATE
 {
@@ -92,10 +75,14 @@ typedef enum _PS_CREATE_STATE
 	PsCreateMaximumStates
 } PS_CREATE_STATE, *PPS_CREATE_STATE;
 
-typedef VOID(KNORMAL_ROUTINE) (
-	IN PVOID NormalContext,
-	IN PVOID SystemArgument1,
-	IN PVOID SystemArgument2);
+typedef
+VOID
+(*PPS_APC_ROUTINE)(
+	_In_opt_ PVOID ApcArgument1,
+	_In_opt_ PVOID ApcArgument2,
+	_In_opt_ PVOID ApcArgument3
+	);
+
 
 typedef struct _PS_ATTRIBUTE
 {
@@ -108,6 +95,22 @@ typedef struct _PS_ATTRIBUTE
 	} u1;
 	PSIZE_T ReturnLength;
 } PS_ATTRIBUTE, *PPS_ATTRIBUTE;
+
+typedef VOID(KNORMAL_ROUTINE) (
+	IN PVOID NormalContext,
+	IN PVOID SystemArgument1,
+	IN PVOID SystemArgument2);
+
+#ifndef InitializeObjectAttributes
+#define InitializeObjectAttributes( p, n, a, r, s ) { \
+	(p)->Length = sizeof( OBJECT_ATTRIBUTES );        \
+	(p)->RootDirectory = r;                           \
+	(p)->Attributes = a;                              \
+	(p)->ObjectName = n;                              \
+	(p)->SecurityDescriptor = s;                      \
+	(p)->SecurityQualityOfService = NULL;             \
+}
+#endif
 
 typedef struct _OBJECT_ATTRIBUTES
 {
@@ -237,5 +240,16 @@ EXTERN_C NTSTATUS NtProtectVirtualMemory(
 
 EXTERN_C NTSTATUS NtClose(
 	IN HANDLE Handle);
+
+EXTERN_C NTSTATUS NtCreateProcessEx(
+	OUT PHANDLE ProcessHandle,
+	IN ACCESS_MASK DesiredAccess,
+	IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
+	IN HANDLE ParentProcess,
+	IN ULONG Flags,
+	IN HANDLE SectionHandle OPTIONAL,
+	IN HANDLE DebugPort OPTIONAL,
+	IN HANDLE ExceptionPort OPTIONAL,
+	IN ULONG JobMemberLevel);
 
 #endif
