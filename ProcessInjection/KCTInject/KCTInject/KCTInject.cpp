@@ -152,14 +152,5 @@ int main(int argc, char** argv) {
         }
     } while (hWnd != NULL);
 
-    // Cleanup stuff that isnt needed when creating a sacrifical process
-    /*status = WriteProcessMemory(hProc, (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable), &peb.KernelCallbackTable, sizeof(ULONG_PTR), NULL);
-
-    VirtualFreeEx(hProc, pBaseAddress, 0, MEM_DECOMMIT | MEM_RELEASE);
-    VirtualFreeEx(hProc, pNewKCT, 0, MEM_DECOMMIT | MEM_RELEASE);
-
-    CloseHandle(hProc);*/
-    //CloseHandle(hWnd); - The loop continues going until there are no windows, so when we exit the loop hWnd is null. CloseHandle(NULL) will obviously throw an invalid handle exception
-
     return 0;
 }
